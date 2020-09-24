@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Sep 24 00:25:53 2020
+
+@author: hp
+"""
+
 # _*_ coding:utf-8 _*_
 """
 Created on Mon Sep 21 17:16:17 2020
@@ -6,12 +13,20 @@ Created on Mon Sep 21 17:16:17 2020
 """
 
 
-
+"""
+本代码主要使用Levenshtein距离算法实现文章查重功能，以下是对算法的简介：
+Levenshtein距离又称作编辑距离（Edit Distance），是指两个字符之间，有一个转变成另一个所需的最少编辑操作次数
+通过编辑距离来判断两个字符串是否相等以及所需步长，动态规划算法得出相应查重率
+"""
+import Levenshtein
 import time
 import re
 import sys
 
-def main(): 
+def main():
+    #开始测量程序所需时间
+    start_time = time.time()
+
     try:
         orig_path, add_path, answer_path= sys.argv[1:4]
     except BaseException:
@@ -47,33 +62,31 @@ def main():
             conditio_three=0
         else:
             conditio_three=1
-    normal_leven(remove_symbol(orig_context),remove_symbol(add_context))
-def normal_leven(str1, str2):
-    
-    
-    len_str1 = len(str1) + 1
-    len_str2 = len(str2) + 1
-      # 创建矩阵
-    matrix = [0 for n in range(len_str1 * len_str2)]
-      #矩阵的第一行
-    for i in range(len_str1):
-        matrix[i] = i
-      # 矩阵的第一列
-    for j in range(0, len(matrix), len_str1):
-        if j % len_str1 == 0:
-            matrix[j] = j // len_str1
-      # 根据状态转移方程逐步得到编辑距离
-    for i in range(1, len_str1):
-        for j in range(1, len_str2):
-            if str1[i-1] == str2[j-1]:
-                cost = 0
-            else:
-                cost = 1
-        matrix[j*len_str1+i] = min(matrix[(j-1)*len_str1+i]+1,
-        matrix[j*len_str1+(i-1)]+1,
-        matrix[(j-1)*len_str1+(i-1)] + cost)
-     
-    return matrix[-1]  # 返回矩阵的最后一个值，也就是编辑距离
+      
+            
+        # 如果输入命令行参数没有错误则运行
+        if(conditio_one&conditio_two&conditio_three):
+            final_orig = remove_symbol(orig_context)  # 调用remove_symbol函数除去影响
+            final_add = remove_symbol(add_context)
+            ratio = Levenshtein.ratio(final_orig, final_add)  #利用Levenshtein包里的函数算出相似度
+            dist = Levenshtein.distance(final_orig, final_add) #利用Levenshtein包里的函数算出转换所需步长
+
+            # 得知程序运行所需时间
+            end_time = time.time()
+            time_required=end_time - start_time
+
+            #控制台输出，方便得知状态和答案
+            print('查重率：%.2f' %ratio)
+            print("输出文件到:"+answer_path)
+            print ('程序所耗时间：%.2f s'%(time_required))
+
+            #写入答案文件
+            answer_txt.write("源文件:"+orig_path+'\n')
+            answer_txt.write("抄袭文件:"+add_path+'\n')
+            answer_txt.write('转换所需步长：'+str(dist)+'\n')
+            answer_txt.write('查重率：%.2f' %ratio+'\n')
+            answer_txt.write('程序所耗时间：%.2f s'%(time_required)+'\n')
+            answer_txt.close()
 
 def remove_symbol(context): # 利用正则除去标点符号等等的影响
     remove_rule = re.compile(u"[^a-zA-Z0-9\u4e00-\u9fa5]")  #只保留数字，大小写字母以及中文
