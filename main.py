@@ -12,8 +12,42 @@ import re
 import sys
 
 def main(): 
-    s1=r'C:\Users\hp\Desktop\大三上\test\orig.txt'
-    s1=r'C:\Users\hp\Desktop\大三上\test\orig_0.8_add.txt'
+    try:
+        orig_path, add_path, answer_path= sys.argv[1:4]
+    except BaseException:
+        print("Error: 输入命令错误")
+    else:
+        # 判断命令行参数有没有错误
+        try:
+            orig = open(orig_path,'r',encoding='UTF-8')
+            orig_context = orig.read()   
+        except IOError:
+            print("Error: 没有从该路径：{}找到文件/读取文件失败".format(orig_path))
+            conditio_one=0
+        else:
+            conditio_one=1
+            orig.close()
+
+        # 判断抄袭文件路径等是否出错
+        try:
+            orig_add = open(add_path,'r',encoding='UTF-8')
+            add_context = orig_add.read()  
+        except IOError:
+            print("Error: 没有从该路径：{}找到文件/读取文件失败".format(add_path))
+            conditio_two=0
+        else:
+            conditio_two=1
+            orig_add.close()
+
+        # 判断答案文件路径等是否出错
+        try:
+            answer_txt=open(answer_path,'w',encoding='UTF-8')
+        except BaseException:
+            print("Error: 创建文件：{}失败".format(answer_path))
+            conditio_three=0
+        else:
+            conditio_three=1
+    normal_leven(remove_symbol(orig_context),remove_symbol(add_context))
 def normal_leven(str1, str2):
     
     
